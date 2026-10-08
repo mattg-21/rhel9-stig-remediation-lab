@@ -1,0 +1,21 @@
+- name: Configure account lockout
+  hosts: stig_targets
+  become: true
+
+  tasks:
+    - name: Ensure account lockout does not automatically reset
+      ansible.builtin.lineinfile:
+        path: /etc/security/faillock.conf
+        regexp: '^\s*#?\s*unlock_time\s*='
+        line: 'unlock_time = 0'
+        state: present
+
+    - name: Check current authselect configuration
+      ansible.builtin.command: authselect current
+      register: authselect_current
+      changed_when: false
+      check_mode: false
+
+    - name: Enable faillock in authselect
+      ansible.builtin.command: authselect enable-feature with-faillock
+      when: "'with-faillock' not in authselect_current.stdout"

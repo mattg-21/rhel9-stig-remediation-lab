@@ -1,0 +1,10 @@
+- name: Configure cron hardening
+  hosts: stig_targets
+  become: true
+
+  tasks:
+    - name: Restrict permissions on /etc/cron.d
+      ansible.builtin.file:
+        path: /etc/cron.d
+        state: directory
+        mode: '0700'

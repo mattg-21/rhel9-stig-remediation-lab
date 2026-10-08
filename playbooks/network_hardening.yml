@@ -1,0 +1,22 @@
+- name: Configure network hardening
+  hosts: stig_targets
+  become: true
+
+  tasks:
+    - name: Disable accepting ICMP redirects for all IPv4 interfaces
+      ansible.posix.sysctl:
+        name: net.ipv4.conf.all.accept_redirects
+        value: '0'
+        state: present
+        sysctl_set: true
+        reload: true
+        sysctl_file: /etc/sysctl.d/99-stig-network.conf
+
+    - name: Enable TCP syncookies
+      ansible.posix.sysctl:
+        name: net.ipv4.tcp_syncookies
+        value: '1'
+        state: present
+        sysctl_set: true
+        reload: true
+        sysctl_file: /etc/sysctl.d/99-stig-network.conf

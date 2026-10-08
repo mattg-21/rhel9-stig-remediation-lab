@@ -1,0 +1,18 @@
+- name: Configure audit hardening
+  hosts: stig_targets
+  become: true
+
+  tasks:
+    - name: Audit changes to sudoers
+      ansible.builtin.lineinfile:
+        path: /etc/audit/rules.d/audit.rules
+        line: '-w /etc/sudoers -p wa -k actions'
+        state: present
+        create: true
+        mode: '0600'
+      notify: Load audit rules
+
+  handlers:
+    - name: Load audit rules
+      ansible.builtin.command:
+        cmd: augenrules --load

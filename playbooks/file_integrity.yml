@@ -1,0 +1,29 @@
+- name: Configure file integrity
+  hosts: stig_targets
+  become: true
+
+  tasks:
+    - name: Ensure AIDE is installed
+      ansible.builtin.package:
+        name: aide
+        state: present
+
+    - name: Check whether AIDE database exists
+      ansible.builtin.stat:
+        path: /var/lib/aide/aide.db.gz
+      register: aide_database_stat
+
+    - name: Initialize AIDE database
+      ansible.builtin.command:
+        cmd: /usr/sbin/aide --init
+        creates: /var/lib/aide/aide.db.new.gz
+      when: not aide_database_stat.stat.exists
+
+    - name: Stage AIDE database
+      ansible.builtin.copy:
+        src: /var/lib/aide/aide.db.new.gz
+        dest: /var/lib/aide/aide.db.gz
+        remote_src: true
+      when:
+        - not aide_database_stat.stat.exists
+        - not ansible_check_mode
